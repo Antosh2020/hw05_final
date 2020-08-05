@@ -1,0 +1,27 @@
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: 
+ =?utf-8?b?0KHQutC40LTQsNC90L3RjyDQv9Cw0YDQvtC70Y8g0L3QsCAxMjcuMC4wLjE6ODAw?=
+ =?utf-8?b?MA==?=
+From: webmaster@localhost
+To: antonlevishko@gmail.com
+Date: Wed, 01 Jul 2020 06:37:41 -0000
+Message-ID: <159358546187.8398.4193791126423154836@MacBook-Pro-Levishko.local>
+
+
+Ви отримали цей лист через те, що зробили запит на перевстановлення пароля для облікового запису користувача на 127.0.0.1:8000.
+
+Будь ласка, перейдіть на цю сторінку, та оберіть новий пароль:
+
+http://127.0.0.1:8000/auth/reset/Mw/5ht-45ea3512311f09e486ce/
+
+У разі, якщо ви забули, ваше ім'я користувача: admin
+
+Дякуємо за користування нашим сайтом!
+
+Команда сайту 127.0.0.1:8000 
+
+
+
+-------------------------------------------------------------------------------
