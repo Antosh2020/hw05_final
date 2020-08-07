@@ -8,14 +8,14 @@
     <div class="container">
             <!-- Вывод ленты записей -->
                 {% for post in page %}
-                  <!-- Вот он, новый include! -->
-                    {% include "post_item.html" with post=post %}
+                  <!-- Вот он, новый includes! -->
+                    {% include "includes/post_item.html" with post=post %}
                 {% endfor %}
     </div>
 
         <!-- Вывод паджинатора -->
         {% if page.has_other_pages %}
-            {% include "paginator.html" with items=page paginator=paginator%}
+            {% include "includes/paginator.html" with items=page paginator=paginator %}
         {% endif %}
 
 {% endblock %}

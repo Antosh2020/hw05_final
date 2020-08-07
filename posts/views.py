@@ -51,7 +51,7 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.all()
     count = posts.count()
-    following = Follow.objects.filter(author=author)
+    following = Follow.objects.filter(author=author).exists()
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -121,7 +121,7 @@ def follow_index(request):
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     user = User.objects.get(username=request.user)
-    if user != author:
+    if not request.user.follower.filter(author=author).exists() and user != author:
         Follow.objects.get_or_create(user=user, author=author)
     return redirect('profile', username=username)
 

@@ -1,4 +1,7 @@
 import tempfile
+from unittest import mock
+
+from django.core.files import File
 from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -6,13 +9,12 @@ from .models import Post, Group, Follow
 from django.core.cache import cache
 
 
-class TestStringMethods(TestCase):
-    def test_length(self):
-                self.assertEqual(len('yatube'), 6)
+def test_length(self):
+    self.assertEqual(len('yatube'), 6)
 
-    def test_show_msg(self):
-                # действительно ли первый аргумент — True?
-                self.assertTrue(True, msg="Важная проверка на истинность")
+
+def test_show_msg(self):
+    self.assertTrue(True, msg="Важная проверка на истинность")
 
 
 class TestNewPostFunc(TestCase):
@@ -29,9 +31,9 @@ class TestNewPostFunc(TestCase):
         self.user1 = User.objects.create_user(
             username="sam", password="12345")
         self.login1 = self.client.force_login(self.user1)
-
         self.user2 = User.objects.create_user(
             username="scott", password="12345")
+        cache.clear()
 
     def get_urls(self, post):
         urls = (
@@ -103,7 +105,7 @@ class TestNewPostFunc(TestCase):
         response = self.client.get("/404/")
         self.assertEqual(response.status_code, 404)
 
-    def test_img_1(self):
+    def test_img_tag_on_post(self):
         self.client.force_login(self.user)
         with tempfile.TemporaryDirectory() as temp_directory:
             with override_settings(MEDIA_ROOT=temp_directory):
@@ -115,7 +117,7 @@ class TestNewPostFunc(TestCase):
                     self.assertEqual(response.status_code, 200)
                     self.assertContains(response, '<img')
 
-    def test_img_2(self):
+    def test_post_with_img_on_page_check(self):
         urls = self.get_urls(post=self.post)
         with tempfile.TemporaryDirectory() as temp_directory:
             with override_settings(MEDIA_ROOT=temp_directory):
@@ -126,20 +128,20 @@ class TestNewPostFunc(TestCase):
                         self.assertEqual(response.status_code, 200)
                         self.assertContains(response, '<img')
 
-    def test_img_3(self):
-        with open('posts/media/text_file.txt', 'rb') as img:
-            post = self.client_auth.post(
-                reverse('new_post'),
-                data={
-                    'author': self.user,
-                    'text': 'post text with image',
-                    'group': self.group.id,
-                    'image': img
-                },
-                follow=True)
-        self.assertEqual(post.status_code, 200)
-        # проверяем, что в БД по прежнему осталась одна запись
-        self.assertEqual(Post.objects.count(), 1)
+    def test_non_img_upload_fails(self):
+        file = mock.MagicMock(spec=File, name="test.txt")
+        response = self.client_auth.post(
+            reverse('new_post'),
+            data={
+                'author': self.user,
+                'text': 'post text with image',
+                'group': self.group.id,
+                'image': file
+            },
+            follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response, form='form', field='image',
+                         errors='Неверный формат файла')
 
     def test_add_post(self):
         self.client.get(reverse('index'))
@@ -148,7 +150,7 @@ class TestNewPostFunc(TestCase):
         response = self.client.get(reverse('index'))
         self.assertContains(response, post.text)
 
-    def test_follow_unfollow_login(self):
+    def test_follow_login(self):
         self.client.force_login(self.user1)
         first = Follow.objects.all().count()
         self.client.get(reverse('profile_follow', kwargs={
@@ -156,10 +158,13 @@ class TestNewPostFunc(TestCase):
         second = Follow.objects.all().count()
         self.assertEqual(first + 1, second)
 
+    def test_unfollow_login(self):
+        self.client.force_login(self.user1)
+        first = Follow.objects.all().count()
         self.client.get(reverse('profile_unfollow', kwargs={
             'username': 'sarah'}))
-        third = Follow.objects.all().count()
-        self.assertEqual(first, third)
+        second = Follow.objects.all().count()
+        self.assertEqual(first, second)
 
     def test_follow_index(self):
         self.client.force_login(self.user1)

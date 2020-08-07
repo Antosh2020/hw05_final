@@ -37,10 +37,10 @@
             <!-- Пост -->
     <div class="container">
             <!-- Вывод ленты записей -->
-                  <!-- Вот он, новый include! -->
-                    {% include "post_item.html" with post=post %}
+                  <!-- Вот он, новый includes! -->
+                    {% include "includes/post_item.html" with post=post %}
     </div>
-                {% include "comments.html" with form=form comments=comments %}
+                {% include "includes/comments.html" with form=form comments=comments %}
      </div>
     </div>
 </main>
