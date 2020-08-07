@@ -109,7 +109,7 @@ class TestNewPostFunc(TestCase):
         self.client.force_login(self.user)
         with tempfile.TemporaryDirectory() as temp_directory:
             with override_settings(MEDIA_ROOT=temp_directory):
-                with open('posts/media/pic.jpg', 'rb') as img:
+                with open('media/posts/image2.png', 'rb') as img:
                     self.post.image.save(img.name, img)
                     response = self.client.post(reverse('post', kwargs={
                         'username': self.user.username,
@@ -121,7 +121,7 @@ class TestNewPostFunc(TestCase):
         urls = self.get_urls(post=self.post)
         with tempfile.TemporaryDirectory() as temp_directory:
             with override_settings(MEDIA_ROOT=temp_directory):
-                with open('posts/media/pic.jpg', 'rb') as img:
+                with open('media/posts/image2.png', 'rb') as img:
                     self.post.image.save(img.name, img)
                     for url in urls:
                         response = self.client_auth.get(url)
@@ -129,10 +129,12 @@ class TestNewPostFunc(TestCase):
                         self.assertContains(response, '<img')
 
     def test_non_img_upload_fails(self):
+        """Не смог побороть этот тест, отправялю с ошибкой,
+        т.к. уже нет идей в чем проблема"""
         file = mock.MagicMock(spec=File, name="test.txt")
         response = self.client_auth.post(
             reverse('new_post'),
-            data={
+            {
                 'author': self.user,
                 'text': 'post text with image',
                 'group': self.group.id,
@@ -141,7 +143,9 @@ class TestNewPostFunc(TestCase):
             follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, form='form', field='image',
-                         errors='Неверный формат файла')
+                             errors='Загрузите правильное изображение. '
+                                    'Файл, который вы загрузили, '
+                                    'поврежден или не является изображением.')
 
     def test_add_post(self):
         self.client.get(reverse('index'))
@@ -150,29 +154,31 @@ class TestNewPostFunc(TestCase):
         response = self.client.get(reverse('index'))
         self.assertContains(response, post.text)
 
-    def test_follow_login(self):
+    def follow_user(self, user):
         self.client.force_login(self.user1)
-        first = Follow.objects.all().count()
         self.client.get(reverse('profile_follow', kwargs={
             'username': 'sarah'}))
+
+    def test_follow_login(self):
+        first = Follow.objects.all().count()
+        self.follow_user(user=self.user1)
         second = Follow.objects.all().count()
         self.assertEqual(first + 1, second)
 
     def test_unfollow_login(self):
-        self.client.force_login(self.user1)
+        self.follow_user(user=self.user1)
         first = Follow.objects.all().count()
         self.client.get(reverse('profile_unfollow', kwargs={
             'username': 'sarah'}))
-        second = Follow.objects.all().count()
-        self.assertEqual(first, second)
+        third = Follow.objects.all().count()
+        self.assertEqual(first - 1, third)
 
     def test_follow_index(self):
-        self.client.force_login(self.user1)
-        self.client.get(reverse('profile_follow', kwargs={
-            'username': 'sarah'}))
+        self.follow_user(user=self.user1)
         response = self.client.get(reverse('follow_index'))
         self.assertContains(response, self.post)
 
+    def test_unfollow_index(self):
         self.client.force_login(self.user2)
         response = self.client.get(reverse('follow_index'))
         self.assertNotContains(response, self.post)

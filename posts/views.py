@@ -38,7 +38,7 @@ def new_post(request):
         form = PostForm()
         return render(request, "new.html", {'form': form, 'button': button,
                                             'title': title})
-    form = PostForm(request.POST)
+    form = PostForm(request.POST, files=request.FILES or None)
     if not form.is_valid():
         return render(request, "new.html", {'form': form})
     post = form.save(commit=False)
@@ -103,7 +103,7 @@ def add_comment(request, username, post_id):
         comment.author = request.user
         comment.save()
         return redirect("post", username=username, post_id=post_id)
-    return render(request, 'comments.html', {'form': form, 'post': post,
+    return render(request, 'includes/comments.html', {'form': form, 'post': post,
                                              'comments': comments})
 
 
@@ -121,7 +121,8 @@ def follow_index(request):
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     user = User.objects.get(username=request.user)
-    if not request.user.follower.filter(author=author).exists() and user != author:
+    if not request.user.follower.filter(author=author).exists() and\
+            user != author:
         Follow.objects.get_or_create(user=user, author=author)
     return redirect('profile', username=username)
 
