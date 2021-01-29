@@ -9,14 +9,6 @@ from .models import Post, Group, Follow
 from django.core.cache import cache
 
 
-def test_length(self):
-    self.assertEqual(len('yatube'), 6)
-
-
-def test_show_msg(self):
-    self.assertTrue(True, msg="Важная проверка на истинность")
-
-
 class TestNewPostFunc(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
